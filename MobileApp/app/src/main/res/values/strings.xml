@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Heartbeat</string>
+    <string name="heart_icon_content_desc">Heart icon</string>
+    <string name="add_sensor">Add sensor</string>
+    <string name="add_event">Add event</string>
+    <string name="save">Save</string>
+</resources>
