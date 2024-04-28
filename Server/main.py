@@ -23,7 +23,7 @@ class InfluxClient:
     def __init__(self, token, org, bucket):
         self._org = org
         self._bucket = bucket
-        self._client = InfluxDBClient(url="http://localhost:6969", token=token)
+        self._client = InfluxDBClient(url="http://localhost:8086", token=token)
 
     from influxdb_client.client.write_api import ASYNCHRONOUS
 
