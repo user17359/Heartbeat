@@ -1,4 +1,3 @@
-import pandas as pd
 from datetime import datetime, timedelta
 
 from rich import print
@@ -65,9 +64,12 @@ class SensorService(Service):
             header = self.sensors[mac]["type"].get_df_header(unit["name"])
             print("Creating dataframe")
             # appending data to .csv file
-            df = pd.DataFrame(data, columns=header)
-            print("Saving to .csv")
-            df.to_csv(label + '.csv', mode='a', header=False)
+
+            # TODO: redo saving to .csv without pandas
+
+            #df = pd.DataFrame(data, columns=header)
+            #print("Saving to .csv")
+            #df.to_csv(label + '.csv', mode='a', header=False)
             print("Sending data to server")
             # sending measurement to server
             result = send_measurement(data, header, label, self.sensors[mac]["type"].encoded_name, self.wifi_led)
@@ -156,9 +158,9 @@ class SensorService(Service):
 
             data_storage[unit["name"]] = []
 
-            df = pd.DataFrame([], columns=self.sensors[mac]["type"].get_df_header(unit["name"]))
-            label = self.sensors[mac]["label"].replace(" ", "_") + '_' + unit["name"]
-            df.to_csv(label + '.csv', index=False)
+            #df = pd.DataFrame([], columns=self.sensors[mac]["type"].get_df_header(unit["name"]))
+            #label = self.sensors[mac]["label"].replace(" ", "_") + '_' + unit["name"]
+            #df.to_csv(label + '.csv', index=False)
 
         self.sensors[mac]["data_storage"] = data_storage
 
