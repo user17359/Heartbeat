@@ -29,8 +29,6 @@ state = {"verbose": False}
 
 is_advertisement_running = False
 
-config = None
-
 @typer_app.command()
 def timed():
     print("Timed blank")
@@ -43,8 +41,12 @@ def startup():
 
 async def async_startup():
 
+    print("Staring up Heartbeat software")
+
     f = open('config.json')
     config = json.load(f)
+
+    print("config file loaded")
 
     asyncio.get_event_loop()
 
