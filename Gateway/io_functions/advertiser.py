@@ -27,16 +27,15 @@ class Advertiser:
 
     def setup_connection(self):
         if not self.is_advertisement_running:
+
+            self.is_advertisement_running = True
             status = self.bt_led.value
 
             self.bt_led.blink()
-            self.is_advertisement_running = True
             self.scheduler.enter(delay=self.adv_time, priority=25, action=self.advertisement_end, argument=(status,))
-            asyncio.run(self.setup_connection_async())
+
+            advert = Advertisement(self.name, self.serviceUUIDs, self.appearance, self.adv_time)
+            asyncio.run(advert.register(self.bus, self.adapter))
+            print("Start of advertisement :loudspeaker:")
         else:
             print("[red]Advertisement already running![/red]")
-
-    async def setup_connection_async(self):
-        print("Start of advertisement :loudspeaker:")
-        advert = Advertisement(self.name, self.serviceUUIDs, self.appearance, self.adv_time)
-        await advert.register(self.bus, self.adapter)
