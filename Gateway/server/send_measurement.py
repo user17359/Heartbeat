@@ -13,7 +13,7 @@ f.close()
 
 def send_measurement(df: list, header: list, label: str, sensor: str, wifi_led: LED, config):
     # API endpoint
-    url = "http://" + config["server_address"] + ":5000/new_measurement?token=" + post_token
+    url = "https://" + config["server_address"] + ":5000/new_measurement?token=" + post_token
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     result = sock.connect_ex((config["server_address"], 5000))
