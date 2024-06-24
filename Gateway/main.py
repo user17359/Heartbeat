@@ -17,7 +17,7 @@ from bluez_peripheral.util import *
 from bluez_peripheral.agent import NoIoAgent
 from bluez_peripheral.gatt.service import ServiceCollection
 
-from io.advertiser import Advertiser
+from io_functions.advertiser import Advertiser
 
 typer_app = typer.Typer()
 
