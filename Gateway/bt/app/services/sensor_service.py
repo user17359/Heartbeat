@@ -1,3 +1,4 @@
+import csv
 from datetime import datetime, timedelta
 
 from rich import print
@@ -26,7 +27,7 @@ class SensorService(Service):
         self.bt_led = leds[0]
         self.wifi_led = leds[1]
         self.transfer_event = None
-        self.transfer_interval = config["transfer_interval"]
+        self.config = config
 
     # Function called to create connection with sensor
     async def start_connection(self, mac):
@@ -39,7 +40,7 @@ class SensorService(Service):
     def start_measurement(self, mac):
         print("Measuring for " + mac + "...")
 
-        self.transfer_event = self.scheduler.enter(self.transfer_interval,
+        self.transfer_event = self.scheduler.enter(self.config["transfer_interval"],
                                                    5,
                                                    self.data_transfer,
                                                    argument=(mac,))
@@ -63,15 +64,12 @@ class SensorService(Service):
             data = self.sensors[mac]["data_storage"][unit["name"]]
             header = self.sensors[mac]["type"].get_df_header(unit["name"])
             print("Creating dataframe")
-            # appending data to .csv file
 
-            # TODO: redo saving to .csv without pandas
-            print("content for .csv")
-            print(header)
-            print(data)
-            #df = pd.DataFrame(data, columns=header)
-            #print("Saving to .csv")
-            #df.to_csv(label + '.csv', mode='a', header=False)
+            # appending data to .csv file
+            with open(self.config["csv_path"] + label + '.csv', 'a', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerows(data)
+
             print("Sending data to server")
             # sending measurement to server
             result = send_measurement(data, header, label, self.sensors[mac]["type"].encoded_name, self.wifi_led)
@@ -81,7 +79,7 @@ class SensorService(Service):
             else:
                 print("Saving data for retry: [orange]" + str(len(self.sensors[mac]["data_storage"][unit["name"]])) + "[/orange] rows")
 
-        self.transfer_event = self.scheduler.enter(self.transfer_interval,
+        self.transfer_event = self.scheduler.enter(self.config["transfer_interval"],
                                                    5,
                                                    self.data_transfer,
                                                    argument=(mac,))
@@ -155,14 +153,14 @@ class SensorService(Service):
         # TODO: more than one connection
         data_storage = {}
 
-        # creating empty .csv with appropriate names
+        # creating empty datastorage array and .csv files
         for unit in self.sensors[mac]["units"]:
-
             data_storage[unit["name"]] = []
+            label = self.sensors[mac]["label"].replace(" ", "_") + '_' + unit["name"]
 
-            #df = pd.DataFrame([], columns=self.sensors[mac]["type"].get_df_header(unit["name"]))
-            #label = self.sensors[mac]["label"].replace(" ", "_") + '_' + unit["name"]
-            #df.to_csv(label + '.csv', index=False)
+            with open(self.config["csv_path"] + label + '.csv', 'w', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(self.sensors[mac]["type"].get_df_header(unit["name"]))
 
         self.sensors[mac]["data_storage"] = data_storage
 

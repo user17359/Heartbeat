@@ -4,5 +4,6 @@
   "server_address": "192.168.6.75",
   "advertisement_time": 60,
   "transfer_interval": 10,
-  "timeout": 180
+  "timeout": 180,
+  "csv_path": "~/csv_logs/"
 }
