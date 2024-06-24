@@ -14,7 +14,7 @@ class Advertiser:
         self.scheduler = scheduler
         self.name = config["name"]
         self.serviceUUIDs = config["service_UUIDs"]
-        self.adv_time = config["adv_time"]
+        self.adv_time = config["advertisement_time"]
 
     def advertisement_end(self, saved_status):
         self.is_advertisement_running = False
