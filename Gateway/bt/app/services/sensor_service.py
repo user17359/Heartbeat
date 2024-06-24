@@ -72,7 +72,7 @@ class SensorService(Service):
 
             print("Sending data to server")
             # sending measurement to server
-            result = send_measurement(data, header, label, self.sensors[mac]["type"].encoded_name, self.wifi_led)
+            result = send_measurement(data, header, label, self.sensors[mac]["type"].encoded_name, self.wifi_led, self.config)
             if result:
                 print("Cleaning data storage: [orange]" + str(len(self.sensors[mac]["data_storage"][unit["name"]])) + "[/orange] rows")
                 self.sensors[mac]["data_storage"][unit["name"]].clear()
