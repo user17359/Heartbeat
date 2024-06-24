@@ -3,17 +3,17 @@ from bt.sensor.supported.Movesense.translations import probing_to_diff
 from bt.sensor.supported.connection import Connection
 
 from rich import print
-from bleak.uuids import normalize_uuid_16
+from bleak.uuids import normalize_uuid_str
 
 from bt.sensor.utils.data_view import DataView
 
-ECG_VOLTAGE_UUID = normalize_uuid_16(0x2BDD)
-ECG_PROBING_UUID = normalize_uuid_16(0x2BE3)
+ECG_VOLTAGE_UUID = normalize_uuid_str("2BDD")
+ECG_PROBING_UUID = normalize_uuid_str("2BE3")
 
-MOVEMENT_UUID = normalize_uuid_16(0x2BE2)
-MOVEMENT_PROBING_UUID = normalize_uuid_16(0x2BE4)
+MOVEMENT_UUID = normalize_uuid_str("2BE2")
+MOVEMENT_PROBING_UUID = normalize_uuid_str("2BE4")
 
-HR_UUID = normalize_uuid_16(0x2A37)
+HR_UUID = normalize_uuid_str("2A37")
 
 
 class MovesenseConnection(Connection):
