@@ -4,22 +4,19 @@ from gpiozero import LED
 import os
 import socket
 
-from server.address import server_address
-
 dirname = os.path.dirname(__file__)
 filename = os.path.join(dirname, 'token.txt')
 f = open(filename, "r")
 post_token = f.read()
 f.close()
-# API endpoint
-url = "http://" + server_address + ":5000/new_measurement?token=" + post_token
 
-timeout = 180
 
-def send_measurement(df: list, header: list, label: str, sensor: str, wifi_led: LED):
+def send_measurement(df: list, header: list, label: str, sensor: str, wifi_led: LED, config):
+    # API endpoint
+    url = "http://" + config["server_address"] + ":5000/new_measurement?token=" + post_token
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    result = sock.connect_ex((server_address, 5000))
+    result = sock.connect_ex((config["server_address"], 5000))
 
     print("Finished connection checking")
 
@@ -53,7 +50,7 @@ def send_measurement(df: list, header: list, label: str, sensor: str, wifi_led: 
 
         print("Posting data...")
         try:
-            response = requests.post(url, json=payload, timeout=timeout)
+            response = requests.post(url, json=payload, timeout=config["timeout"])
             response.raise_for_status()
             wifi_led.on()
             print("Response [blue]" + str(response.status_code) + "[/blue]")

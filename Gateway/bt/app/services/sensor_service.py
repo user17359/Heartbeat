@@ -16,9 +16,8 @@ from server.send_measurement import send_measurement
 class SensorService(Service):
     sensors = {}
     current_mac = ""
-    transfer_interval = 60
 
-    def __init__(self, scheduler, bus, adapter, leds):
+    def __init__(self, scheduler, bus, adapter, leds, config):
         # Base 16 service UUID, This should be a primary service.
         super().__init__("a56f5e06-fd24-4ffe-906f-f82e916262bc", True)
         self.scheduler = scheduler
@@ -27,6 +26,7 @@ class SensorService(Service):
         self.bt_led = leds[0]
         self.wifi_led = leds[1]
         self.transfer_event = None
+        self.transfer_interval = config["transfer_interval"]
 
     # Function called to create connection with sensor
     async def start_connection(self, mac):
@@ -66,7 +66,9 @@ class SensorService(Service):
             # appending data to .csv file
 
             # TODO: redo saving to .csv without pandas
-
+            print("content for .csv")
+            print(header)
+            print(data)
             #df = pd.DataFrame(data, columns=header)
             #print("Saving to .csv")
             #df.to_csv(label + '.csv', mode='a', header=False)

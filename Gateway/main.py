@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import json
+
 from gpiozero import LED
 from gpiozero import Button
 import time
@@ -15,7 +17,7 @@ from bluez_peripheral.util import *
 from bluez_peripheral.agent import NoIoAgent
 from bluez_peripheral.gatt.service import ServiceCollection
 
-from utils.advertiser import Advertiser
+from io.advertiser import Advertiser
 
 typer_app = typer.Typer()
 
@@ -27,6 +29,7 @@ state = {"verbose": False}
 
 is_advertisement_running = False
 
+config = None
 
 @typer_app.command()
 def timed():
@@ -39,23 +42,27 @@ def startup():
 
 
 async def async_startup():
+
+    f = open('config.json')
+    config = json.load(f)
+
     asyncio.get_event_loop()
 
     scheduler = sched.scheduler(time.time, time.sleep)
     bus = await get_message_bus()
     adapter = await Adapter.get_first(bus)
 
-    advertiser = Advertiser(bt_led, bus, adapter, scheduler)
+    advertiser = Advertiser(bt_led, bus, adapter, scheduler, config)
 
     service_collection = ServiceCollection()
 
-    event_service = EventService()
+    event_service = EventService(config)
     service_collection.add_service(event_service)
 
     connectivity_service = ConnectivityService()
     service_collection.add_service(connectivity_service)
 
-    sensor_service = SensorService(scheduler, bus, adapter, (bt_led, wifi_led))
+    sensor_service = SensorService(scheduler, bus, adapter, (bt_led, wifi_led), config)
     service_collection.add_service(sensor_service)
 
     await service_collection.register(bus)

@@ -3,8 +3,6 @@ from rich import print
 
 from bt.app.data_classes.bt_device import BtDevice
 
-name_key = "Movesense"
-
 
 async def scan_sensor():
     bt_list = []

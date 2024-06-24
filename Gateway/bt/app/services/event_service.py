@@ -11,9 +11,10 @@ from server.send_entry import send_entry
 class EventService(Service):
     entry_list = []
 
-    def __init__(self):
+    def __init__(self, config):
         # Base 16 service UUID, This should be a primary service.
         super().__init__("4f8ef7bf-fe20-437b-9320-89e6108c82e0", True)
+        self.config = config
 
     # Characteristic called to add new event to diary
     @characteristic("27e571d9-53fa-4756-88da-07716d7ea633", CharFlags.WRITE_WITHOUT_RESPONSE)
@@ -27,4 +28,4 @@ class EventService(Service):
         print("Registered entry :notebook:, label: " + entry.label \
               + " description: " + entry.description + " at time: " + str(entry.hour) + ":" + str(entry.minute))
         self.entry_list.append(entry)
-        send_entry(entry)
+        send_entry(entry, self.config)
