@@ -5,5 +5,5 @@
   "advertisement_time": 60,
   "transfer_interval": 10,
   "timeout": 180,
-  "csv_path": "~/csv_logs/"
+  "csv_path": "/home/admin/csv_logs/"
 }
