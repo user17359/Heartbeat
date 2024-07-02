@@ -44,7 +44,8 @@ class Advertiser:
             self.scheduler.enter(delay=self.adv_time, priority=25, action=self.advertisement_end, argument=(status,))
 
             advert = Advertisement(self.name, self.serviceUUIDs, self.appearance, self.adv_time)
-            asyncio.ensure_future(advert.register(self.bus, self.adapter))
+            future = asyncio.ensure_future(advert.register(self.bus, self.adapter), loop=loop)
             print("Start of advertisement :loudspeaker:")
+            loop.run_until_complete(future)
         else:
             print("[red]Advertisement already running![/red]")
