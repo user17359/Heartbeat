@@ -28,6 +28,15 @@ class Advertiser:
     def setup_connection(self):
         if not self.is_advertisement_running:
 
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError as e:
+                if str(e).startswith('There is no current event loop in thread'):
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                else:
+                    raise
+
             self.is_advertisement_running = True
             status = self.bt_led.value
 
@@ -35,7 +44,7 @@ class Advertiser:
             self.scheduler.enter(delay=self.adv_time, priority=25, action=self.advertisement_end, argument=(status,))
 
             advert = Advertisement(self.name, self.serviceUUIDs, self.appearance, self.adv_time)
-            asyncio.create_task(advert.register(self.bus, self.adapter))
+            asyncio.ensure_future(advert.register(self.bus, self.adapter))
             print("Start of advertisement :loudspeaker:")
         else:
             print("[red]Advertisement already running![/red]")
