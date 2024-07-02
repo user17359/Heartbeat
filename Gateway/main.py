@@ -48,13 +48,13 @@ async def async_startup():
 
     print("config file loaded")
 
-    asyncio.get_event_loop()
+    loop = asyncio.get_event_loop()
 
     scheduler = sched.scheduler(time.time, time.sleep)
     bus = await get_message_bus()
     adapter = await Adapter.get_first(bus)
 
-    advertiser = Advertiser(bt_led, bus, adapter, scheduler, config)
+    advertiser = Advertiser(bt_led, bus, adapter, scheduler, config, loop)
 
     service_collection = ServiceCollection()
 

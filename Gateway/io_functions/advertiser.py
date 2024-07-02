@@ -7,7 +7,7 @@ class Advertiser:
     is_advertisement_running = False
     appearance = 0x008D
 
-    def __init__(self, bt_led, bus, adapter, scheduler, config):
+    def __init__(self, bt_led, bus, adapter, scheduler, config, loop):
         self.bt_led = bt_led
         self.bus = bus
         self.adapter = adapter
@@ -15,6 +15,7 @@ class Advertiser:
         self.name = config["name"]
         self.serviceUUIDs = config["service_UUIDs"]
         self.adv_time = config["advertisement_time"]
+        self.loop = loop
 
     def advertisement_end(self, saved_status):
         self.is_advertisement_running = False
@@ -28,15 +29,6 @@ class Advertiser:
     def setup_connection(self):
         if not self.is_advertisement_running:
 
-            try:
-                loop = asyncio.get_event_loop()
-            except RuntimeError as e:
-                if str(e).startswith('There is no current event loop in thread'):
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                else:
-                    raise
-
             self.is_advertisement_running = True
             status = self.bt_led.value
 
@@ -44,8 +36,7 @@ class Advertiser:
             self.scheduler.enter(delay=self.adv_time, priority=25, action=self.advertisement_end, argument=(status,))
 
             advert = Advertisement(self.name, self.serviceUUIDs, self.appearance, self.adv_time)
-            future = asyncio.ensure_future(advert.register(self.bus, self.adapter), loop=loop)
+            asyncio.ensure_future(advert.register(self.bus, self.adapter), loop=self.loop)
             print("Start of advertisement :loudspeaker:")
-            loop.run_until_complete(future)
         else:
             print("[red]Advertisement already running![/red]")
