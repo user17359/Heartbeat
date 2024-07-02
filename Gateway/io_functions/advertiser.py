@@ -35,7 +35,7 @@ class Advertiser:
             self.scheduler.enter(delay=self.adv_time, priority=25, action=self.advertisement_end, argument=(status,))
 
             advert = Advertisement(self.name, self.serviceUUIDs, self.appearance, self.adv_time)
-            asyncio.run(advert.register(self.bus, self.adapter))
+            asyncio.create_task(advert.register(self.bus, self.adapter))
             print("Start of advertisement :loudspeaker:")
         else:
             print("[red]Advertisement already running![/red]")
