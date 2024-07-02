@@ -53,6 +53,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.TimeZone
 
 enum class DialogOptions {
@@ -90,13 +92,18 @@ fun NewMeasurementScreen(navController: NavHostController,
         }
     }
 
+    val currentDT = LocalDateTime.now()
+    val mTimeZone: TimeZone = TimeZone.getDefault()
+
     var label by remember { mutableStateOf("") }
 
-    val startTime = rememberTimePickerState(is24Hour = true)
-    val startDate = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
+    val startTime = rememberTimePickerState(is24Hour = false, initialHour = currentDT.hour, initialMinute = currentDT.minute)
+    val startDate = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker, initialSelectedDateMillis = currentDT.toEpochSecond(
+        ZoneOffset.ofHours(mTimeZone.rawOffset / 3600000)) * 1000)
 
-    val endTime = rememberTimePickerState(is24Hour = true)
-    val endDate = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
+    val endTime = rememberTimePickerState(is24Hour = false, initialHour = currentDT.hour, initialMinute = currentDT.minute)
+    val endDate = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker, initialSelectedDateMillis = currentDT.toEpochSecond(
+        ZoneOffset.ofHours(mTimeZone.rawOffset/ 3600000)) * 1000)
 
     val showTimePicker = remember { mutableStateOf(DialogOptions.None) }
     val showDatePicker = remember { mutableStateOf(DialogOptions.None) }
@@ -199,7 +206,7 @@ fun NewMeasurementScreen(navController: NavHostController,
                     isTimeSelected = isStartTimeSelected.value,
                     date = startDate,
                     onClickDate = { showDatePicker.value = DialogOptions.Start },
-                    isDateSelected = isStartDateSelected.value,
+                    isDateSelected = true,
                     label = "Start"
                 )
 
@@ -210,7 +217,7 @@ fun NewMeasurementScreen(navController: NavHostController,
                     isTimeSelected = isEndTimeSelected.value,
                     date = endDate,
                     onClickDate = { showDatePicker.value = DialogOptions.End },
-                    isDateSelected = isEndDateSelected.value,
+                    isDateSelected = true,
                     label = "End"
                 )
 
