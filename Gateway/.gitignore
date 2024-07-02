@@ -186,3 +186,6 @@ fabric.properties
 
 # file storing uuid
 server/uuid.txt
+
+# config file
+config.json
