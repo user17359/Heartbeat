@@ -109,7 +109,9 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
                 peripheral!!.connect()
                 peripheral!!.state.collect { state ->
                     connectionState.postValue(state)
-                    if (state is State.Connected) connected = true
+                    if (state is State.Connected) {
+                        connected = true
+                    }
                 }
             }
         }
@@ -135,6 +137,8 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
             service = connectivityServiceUUID,
             characteristic = "9f03f5db-93ba-402b-951f-1c8e008b5adc",
         )
+
+        reconnectState.postValue(false)
 
         val reading = peripheral!!.read(characteristic).decodeToString()
         val sensors: List<BtSensor> = Json.decodeFromString(reading)
