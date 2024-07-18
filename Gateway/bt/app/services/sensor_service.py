@@ -112,7 +112,7 @@ class SensorService(Service):
 
         units = data["sensors"]
 
-        connection_type: Connection = possible_connections[data["type"]]
+        connection_type: Connection = possible_connections[data["type"]]()
 
         run_at = datetime.fromtimestamp(data["startMilliseconds"] / 1000.0)
 
