@@ -26,7 +26,6 @@ class SensorService(Service):
         self.adapter = adapter
         self.bt_led = leds[0]
         self.wifi_led = leds[1]
-        self.transfer_event = None
         self.config = config
 
     # Function called to create connection with sensor
@@ -40,10 +39,10 @@ class SensorService(Service):
     def start_measurement(self, mac):
         print("Measuring for " + mac + "...")
 
-        self.transfer_event = self.scheduler.enter(self.config["transfer_interval"],
-                                                   5,
-                                                   self.data_transfer,
-                                                   argument=(mac,))
+        self.sensors[mac]["transfer_event"] = self.scheduler.enter(self.config["transfer_interval"],
+                                                                   5,
+                                                                   self.data_transfer,
+                                                                   argument=(mac,))
 
         self.bt_led.on()
 
@@ -72,25 +71,28 @@ class SensorService(Service):
 
             print("Sending data to server")
             # sending measurement to server
-            result = send_measurement(data, header, label, self.sensors[mac]["type"].encoded_name, self.wifi_led, self.config)
+            result = send_measurement(data, header, label, self.sensors[mac]["type"].encoded_name, self.wifi_led,
+                                      self.config)
             if result:
-                print("Cleaning data storage: [orange]" + str(len(self.sensors[mac]["data_storage"][unit["name"]])) + "[/orange] rows")
+                print("Cleaning data storage: [orange]" + str(
+                    len(self.sensors[mac]["data_storage"][unit["name"]])) + "[/orange] rows")
                 self.sensors[mac]["data_storage"][unit["name"]].clear()
             else:
-                print("Saving data for retry: [orange]" + str(len(self.sensors[mac]["data_storage"][unit["name"]])) + "[/orange] rows")
+                print("Saving data for retry: [orange]" + str(
+                    len(self.sensors[mac]["data_storage"][unit["name"]])) + "[/orange] rows")
 
-        self.transfer_event = self.scheduler.enter(self.config["transfer_interval"],
-                                                   5,
-                                                   self.data_transfer,
-                                                   argument=(mac,))
+        self.sensors[mac]["transfer_event"] = self.scheduler.enter(self.config["transfer_interval"],
+                                                                   5,
+                                                                   self.data_transfer,
+                                                                   argument=(mac,))
 
     # Function called on time set as end of measurement
     def end_measurement(self, mac):
         print("End of measurement for " + mac)
         self.bt_led.off()
 
-        if self.transfer_event is not None:
-            self.scheduler.cancel(self.transfer_event)
+        if self.sensors[mac]["transfer_event"] is not None:
+            self.scheduler.cancel(self.sensors[mac]["transfer_event"])
 
         launch_stop(
             self.sensors[mac]["type"],
@@ -134,7 +136,8 @@ class SensorService(Service):
                              "client": None,
                              "units": units,
                              "label": data['label'],
-                             "state": "empty"}
+                             "state": "empty",
+                             "transfer_event": None}
 
         # Preparing connection with sensor
         client = await self.start_connection(mac)
