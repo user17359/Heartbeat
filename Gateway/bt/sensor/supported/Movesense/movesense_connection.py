@@ -18,8 +18,10 @@ HR_UUID = normalize_uuid_16(0x2A37)
 
 class MovesenseConnection(Connection):
     encoded_name = "Movesense"
-    notification_handler = NotificationHandler()
-    subscriptions = []
+
+    def __init__(self):
+        self.notification_handler = NotificationHandler()
+        self.subscriptions = []
 
     def get_df_header(self, unit):
         if unit == "ecg":

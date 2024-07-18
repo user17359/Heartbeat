@@ -2,8 +2,10 @@ from datetime import datetime
 
 
 class TimestampConverter:
-    start_utf_timestamp = -1
-    start_movesense_timestamp = -1
+
+    def __init__(self):
+        self.start_utf_timestamp = -1
+        self.start_movesense_timestamp = -1
 
     def convert_timestamp(self, movesense_timestamp):
         if movesense_timestamp == -1:
