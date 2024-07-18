@@ -7,6 +7,9 @@ from rich import print
 class NotificationHandler:
     timestamp_converter = TimestampConverter()
 
+    def reset_timestamps(self):
+        self.timestamp_converter = TimestampConverter()
+
     async def notification_handler_imu(self, _, dv, data_storage, state, service, diff):
         """Notification handler for one of IMU sensors"""
         samples = 8

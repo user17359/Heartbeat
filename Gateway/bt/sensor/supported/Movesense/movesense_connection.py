@@ -32,6 +32,7 @@ class MovesenseConnection(Connection):
             raise Exception()
 
     async def start_connection(self, data_storage, state, client, service, units):
+        self.notification_handler.reset_timestamps()
         try:
             for unit in units:
                 if unit["name"] == "ecg":

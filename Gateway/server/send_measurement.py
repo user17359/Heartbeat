@@ -15,10 +15,10 @@ def send_measurement(df: list, header: list, label: str, sensor: str, wifi_led: 
     # API endpoint
     url = "https://" + config["server_address"] + ":5000/new_measurement?token=" + post_token
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    result = sock.connect_ex((config["server_address"], 5000))
+    # sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    result = 0  # sock.connect_ex((config["server_address"], 5000))
 
-    print("Finished connection checking")
+    print("Omitted connection checking")
 
     if result == 0:
         wifi_led.blink()
@@ -50,7 +50,7 @@ def send_measurement(df: list, header: list, label: str, sensor: str, wifi_led: 
 
         print("Posting data...")
         try:
-            response = requests.post(url, json=payload, timeout=config["timeout"])
+            response = requests.post(url, json=payload, timeout=config["timeout"], verify=False)
             response.raise_for_status()
             wifi_led.on()
             print("Response [blue]" + str(response.status_code) + "[/blue]")
