@@ -5,7 +5,8 @@ from rich import print
 
 
 class NotificationHandler:
-    timestamp_converter = TimestampConverter()
+    def __init__(self):
+        self.timestamp_converter = TimestampConverter()
 
     def reset_timestamps(self):
         self.timestamp_converter = TimestampConverter()
