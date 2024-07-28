@@ -9,7 +9,7 @@ import json
 
 class ConnectivityService(Service):
 
-    sensor_list = []
+    sensor_list = {}
 
     def __init__(self):
         # Base 16 service UUID, This should be a primary service.
@@ -18,7 +18,7 @@ class ConnectivityService(Service):
     # Characteristic used to get list of remembered sensors
     @characteristic("9f03f5db-93ba-402b-951f-1c8e008b5adc", CharFlags.READ)
     def connected_sensors(self, options):
-        json_list = json.dumps([item.to_json() for item in self.sensor_list])
+        json_list = json.dumps([item.to_json() for item in self.sensor_list.values()])
         data = bytes(json_list, "utf-8")
         return data
 
@@ -39,4 +39,4 @@ class ConnectivityService(Service):
     def new_sensor(self, value, options):
         data = json.loads(value)
         sensor = BtDevice(data["name"], data["mac"], "waiting")
-        self.sensor_list.append(sensor)
+        self.sensor_list[data["mac"]] = sensor

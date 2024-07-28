@@ -8,6 +8,7 @@ from bluez_peripheral.gatt.characteristic import characteristic, CharacteristicF
 
 import json
 
+from bt.app.services.connectivity_service import ConnectivityService
 from bt.sensor.supported.connection import Connection
 from bt.sensor.supported.connections_dict import possible_connections
 from bt.sensor.timed_connection import launch_timed, start_connection, launch_stop, launch_disconnect
@@ -37,6 +38,7 @@ class SensorService(Service):
 
     # Function called on time set as start of measurement
     def start_measurement(self, mac):
+        ConnectivityService.connected_sensors[mac].details = "in progress"
         print("Measuring for " + mac + "...")
 
         self.sensors[mac]["transfer_event"] = self.scheduler.enter(self.config["transfer_interval"],
@@ -155,7 +157,6 @@ class SensorService(Service):
                                             self.end_measurement,
                                             argument=(mac,))
 
-        # TODO: more than one connection
         data_storage = {}
 
         # creating empty datastorage array and .csv files
@@ -171,6 +172,9 @@ class SensorService(Service):
 
         self.sensors[mac]["start_event"] = start_event
         self.sensors[mac]["end_event"] = end_event
+
+        ConnectivityService.connected_sensors[mac].details = "starting at {:02d}:{:02d}".format(run_at.hour,
+                                                                                                run_at.minute)
 
     # Called from this app to send notifications about changing measurement state and data (if present)
     @characteristic("46dff0ae-21e2-4e55-8b38-3ae249e23884", CharFlags.NOTIFY)
@@ -195,31 +199,6 @@ class SensorService(Service):
         self.current_mac = string_value
 
     # TODO: figure out if it will be needed anymore
-
-    # Characteristic called to get current measurement state (empty/scheduled/measuring)
-    # @characteristic("e946c454-6083-44d1-a726-076cecfc3744", CharFlags.READ)
-    # def measurement_info(self, options):
-    #     print("Sending [bold green]measurement info[/bold green]")
-    #     if self.current_mac in self.sensors:
-    #         start_time = self.sensors[self.current_mac]["run_at"]
-    #         print("MAC is set")
-    #         info = {
-    #             "state": self.sensors[self.current_mac]["state"],
-    #             "label": self.sensors[self.current_mac]["label"],
-    #             "startTime": "{:02d}:{:02d}".format(start_time.hour, start_time.minute),
-    #             "units": self.sensors[self.current_mac]["units"]
-    #         }
-    #     else:
-    #         print("MAC is not set")
-    #         info = {
-    #             "state": "empty",
-    #             "label": "",
-    #             "startTime": "",
-    #             "units": []
-    #         }
-    #     json_list = json.dumps(info)
-    #     data = bytes(json_list, "utf-8")
-    #     return data
 
     # Characteristic called when user forces stopping measurement
     @characteristic("1fbbda31-a97a-4d1d-a4dd-a7c17b853dcd", CharFlags.READ)
