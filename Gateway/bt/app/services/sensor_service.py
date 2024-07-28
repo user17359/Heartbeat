@@ -54,7 +54,7 @@ class SensorService(Service):
             client=self.sensors[mac]["client"],
             service=self)
 
-    def data_transfer(self, mac):
+    def data_transfer(self, mac, repeating=True):
         for unit in self.sensors[mac]["units"]:
             timestamp = datetime.now()
             print("TIMESTAMP", timestamp)
@@ -81,10 +81,11 @@ class SensorService(Service):
                 print("Saving data for retry: [orange]" + str(
                     len(self.sensors[mac]["data_storage"][unit["name"]])) + "[/orange] rows")
 
-        self.sensors[mac]["transfer_event"] = self.scheduler.enter(self.config["transfer_interval"],
-                                                                   5,
-                                                                   self.data_transfer,
-                                                                   argument=(mac,))
+        if repeating:
+            self.sensors[mac]["transfer_event"] = self.scheduler.enter(self.config["transfer_interval"],
+                                                                       5,
+                                                                       self.data_transfer,
+                                                                       argument=(mac,))
 
     # Function called on time set as end of measurement
     def end_measurement(self, mac):
@@ -93,7 +94,7 @@ class SensorService(Service):
 
         if self.sensors[mac]["transfer_event"] is not None:
             self.scheduler.cancel(self.sensors[mac]["transfer_event"])
-            self.data_transfer(mac)
+            self.data_transfer(mac, False)
 
         launch_stop(
             self.sensors[mac]["type"],
