@@ -38,7 +38,7 @@ class SensorService(Service):
 
     # Function called on time set as start of measurement
     def start_measurement(self, mac):
-        ConnectivityService.connected_sensors[mac].details = "in progress"
+        ConnectivityService.sensor_list[mac].details = "in progress"
         print("Measuring for " + mac + "...")
 
         self.sensors[mac]["transfer_event"] = self.scheduler.enter(self.config["transfer_interval"],
@@ -173,7 +173,7 @@ class SensorService(Service):
         self.sensors[mac]["start_event"] = start_event
         self.sensors[mac]["end_event"] = end_event
 
-        ConnectivityService.connected_sensors[mac].details = "starting at {:02d}:{:02d}".format(run_at.hour,
+        ConnectivityService.sensor_list[mac].details = "starting at {:02d}:{:02d}".format(run_at.hour,
                                                                                                 run_at.minute)
 
     # Called from this app to send notifications about changing measurement state and data (if present)
