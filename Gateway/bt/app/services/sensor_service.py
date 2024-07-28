@@ -93,6 +93,7 @@ class SensorService(Service):
 
         if self.sensors[mac]["transfer_event"] is not None:
             self.scheduler.cancel(self.sensors[mac]["transfer_event"])
+            self.data_transfer(mac)
 
         launch_stop(
             self.sensors[mac]["type"],
