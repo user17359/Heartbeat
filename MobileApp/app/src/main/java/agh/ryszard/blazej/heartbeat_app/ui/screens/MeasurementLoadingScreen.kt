@@ -39,10 +39,17 @@ fun MeasurementLoadingScreen(
 ) {
     val connectionState = scanViewModel.connectionState.observeAsState()
     val reconnectState = scanViewModel.reconnectState.observeAsState()
+    val connectionFailure = scanViewModel.connectionFailure.observeAsState()
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             scanViewModel.timedReconnect(5000)
+        }
+    }
+
+    LaunchedEffect(connectionFailure.value) {
+        if(connectionFailure.value!!) {
+            onFailure(navHostController)
         }
     }
 
@@ -92,4 +99,8 @@ fun MeasurementLoadingScreen(
 
 private suspend fun onLoadingEnd(navController: NavHostController) = coroutineScope{
     navController.navigate(HeartbeatScreen.GatewayMenu.name)
+}
+
+private suspend fun onFailure(navController: NavHostController) = coroutineScope{
+    navController.navigate(HeartbeatScreen.GatewaySelection.name)
 }

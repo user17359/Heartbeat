@@ -7,14 +7,17 @@ import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.Measuremen
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorSettings
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SupportedSensors
 import agh.ryszard.blazej.heartbeat_app.utils.peripheralScope
+import android.bluetooth.le.ScanSettings
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.juul.kable.AndroidAdvertisement
 import com.juul.kable.ConnectionLostException
 import com.juul.kable.Filter
+import com.juul.kable.ObsoleteKableApi
 import com.juul.kable.Peripheral
 import com.juul.kable.Scanner
 import com.juul.kable.State
+import com.juul.kable.Transport
 import com.juul.kable.characteristicOf
 import com.juul.kable.logs.Logging
 import com.juul.kable.logs.SystemLogEngine
@@ -22,7 +25,6 @@ import com.juul.kable.peripheral
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
@@ -46,8 +48,9 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
     val reconnectState = MutableLiveData(false)
 
     private val _foundDevices = mutableListOf<String>()
-    private val _connectionTimeoutMilis: Long = 10000
     var peripheral: Peripheral? = null
+
+    val startConnectionTries = 5
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler{ _, throwable ->
         throwable.printStackTrace()
@@ -59,6 +62,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
         listOfDevices.value = setOf()
     }
 
+    @OptIn(ObsoleteKableApi::class)
     suspend fun scanLeDevice() {
         Scanner {
             filters = listOf(
@@ -69,6 +73,9 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
                 level = Logging.Level.Warnings
                 format = Logging.Format.Multiline
             }
+            scanSettings = ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .build()
         }.advertisements.collect{ result ->
             listOfDevices.postValue(listOfDevices.value?.toMutableList()?.apply {
                 if(!_foundDevices.contains(result.address)) {
@@ -84,14 +91,11 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
         listOfDevices.value = setOf()
         _foundDevices.clear()
         val peripheral = _scope.peripheral(advertisement) {
-
+            transport = Transport.Le
         }
         this.peripheral = peripheral
-        val job = _scope.launch {
-            asyncConnection()
-        }
         _scope.launch {
-            //timeout(_connectionTimeoutMilis, job)
+            asyncConnection(startConnectionTries)
         }
     }
 
@@ -102,7 +106,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
         }
     }
 
-    private suspend fun asyncConnection() {
+    private suspend fun asyncConnection(leftTries: Int) {
         try {
             var connected = false
             while (!connected) {
@@ -116,13 +120,13 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
             }
         }
         catch (e: ConnectionLostException){
-            connectionFailure.postValue(true)
+            if(leftTries > 0){
+                asyncConnection(leftTries - 1)
+            }
+            else {
+                connectionFailure.postValue(true)
+            }
         }
-    }
-
-    private suspend fun timeout(timeMilis: Long, job: Job) {
-        delay(timeMilis)
-        job.cancelAndJoin()
     }
 
     private suspend fun asyncDisconnection() {
@@ -215,27 +219,13 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
         peripheral!!.disconnect()
         delay(timeMilis)
         reconnectState.postValue(true)
-        asyncConnection()
+        asyncConnection(5)
     }
 
-    // TODO: figure out future of those functions
-    /*suspend fun checkStatus(device: BtSensor) {
-        val characteristic = characteristicOf(
-            service = sensorServiceUUID,
-            characteristic = "46dff0ae-21e2-4e55-8b38-3ae249e23884",
-        )
-       val observation = peripheral!!.observe(characteristic)
-        observation.collect{ data ->
-            val progress: ProgressReport = Json.decodeFromString(data.decodeToString())
-            val sensorState = SensorState.fromString(progress.state)
-            measurementState.postValue(sensorState)
-        }
-    }*/
-
-    /*suspend fun startStatus(device: BtSensor) {
+    suspend fun endMeasurement(device: BtSensor){
         val readCharacteristic = characteristicOf(
             service = sensorServiceUUID,
-            characteristic = "e946c454-6083-44d1-a726-076cecfc3744"
+            characteristic = "1fbbda31-a97a-4d1d-a4dd-a7c17b853dcd"
         )
         val writeCharacteristic = characteristicOf(
             service = sensorServiceUUID,
@@ -243,22 +233,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
         )
 
         peripheral!!.write(writeCharacteristic, device.mac.toByteArray(Charsets.UTF_8))
-
-        val jsonData = peripheral!!.read(readCharacteristic).decodeToString()
-        val decodedData = Json.decodeFromString<ProgressStatus>(jsonData)
-
-        measurementState.postValue(SensorState.fromString(decodedData.state))
-        label.postValue(decodedData.label)
-        startTime.postValue(decodedData.startTime)
-        _units = decodedData.units
-    } */
-
-    suspend fun endMeasurement(){
-        val characteristic = characteristicOf(
-            service = sensorServiceUUID,
-            characteristic = "1fbbda31-a97a-4d1d-a4dd-a7c17b853dcd"
-        )
-        peripheral!!.read(characteristic)
+        peripheral!!.read(readCharacteristic)
     }
 
     suspend fun addEntry(entry: DiaryEntry) {

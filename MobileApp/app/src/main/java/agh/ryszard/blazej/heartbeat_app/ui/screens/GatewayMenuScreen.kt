@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,12 +41,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.juul.kable.State
+import kotlinx.coroutines.launch
 
 @Composable
 fun GatewayMenuScreen(
     navController: NavHostController,
     scanViewModel: ScanViewModel
 ) {
+    val coroutineScope = rememberCoroutineScope()
     val connectionState = scanViewModel.connectionState.observeAsState()
     var rememberedSensors by remember { mutableStateOf(listOf<BtSensor>()) }
 
@@ -110,7 +113,12 @@ fun GatewayMenuScreen(
                         icon = painterResource(settings.icon),
                         name = sensor.name,
                         extraInfo = sensor.details,
-                        onClick = { onSensorClick(navController, sensor.mac) }
+                        onClick = { onSensorClick(navController, sensor.mac) },
+                        onLongClick = {
+                            coroutineScope.launch {
+                                onSensorLongClick(sensor, scanViewModel)
+                            }
+                        }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -145,6 +153,9 @@ private fun onDisconnect(scanViewModel: ScanViewModel) {
 }
 private fun onSensorClick(navController: NavHostController, mac: String) {
     navController.navigate("${HeartbeatScreen.NewMeasurement.name}/$mac")
+}
+private suspend fun onSensorLongClick(btDevice: BtSensor, viewModel: ScanViewModel){
+    viewModel.endMeasurement(btDevice)
 }
 private fun onAddEvent(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.DiaryEntry.name)

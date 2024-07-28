@@ -2,7 +2,8 @@ package agh.ryszard.blazej.heartbeat_app.ui.elements
 
 import agh.ryszard.blazej.heartbeat_app.R
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,15 +22,20 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun BtDeviceCard(icon: Painter, name: String, extraInfo: String, onClick: () -> Unit){
+fun BtDeviceCard(icon: Painter, name: String, extraInfo: String, onClick: () -> Unit, onLongClick: (() -> Unit)? = null){
     OutlinedCard (
         colors = CardDefaults.cardColors(
             containerColor = if(extraInfo != "") MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier
-            .clickable { onClick() }
+            .combinedClickable(
+                onClick = { onClick() },
+                onLongClick = { onLongClick?.invoke() ?: Unit }
+            )
+
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -67,15 +73,19 @@ fun BtDeviceCard(icon: Painter, name: String, extraInfo: String, onClick: () -> 
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun BtDeviceCard(icon: ImageVector, name: String, extraInfo: String, onClick: () -> Unit){
+fun BtDeviceCard(icon: ImageVector, name: String, extraInfo: String, onClick: () -> Unit, onLongClick: (() -> Unit)? = null){
     OutlinedCard (
         colors = CardDefaults.cardColors(
             containerColor = if(extraInfo != "") MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier
-            .clickable { onClick() }
+            .combinedClickable(
+                onClick = { onClick() },
+                onLongClick = { onLongClick?.invoke() ?: Unit }
+            )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

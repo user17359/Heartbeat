@@ -31,6 +31,7 @@ import kotlinx.coroutines.delay
 fun SensorLoadingScreen(
     navHostController: NavHostController
 ) {
+
     LaunchedEffect(navHostController){
         // mocking connecting time
         delay(1000)
