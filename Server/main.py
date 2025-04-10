@@ -2,18 +2,18 @@ from flask import Flask
 from flask import request, abort
 from influxdb_client import InfluxDBClient
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 
 bucket = "Heartbeat2809"
 org = "Heartbeat"
 
-f = open("token.txt", "r")
-token: str = f.read()
-f.close()
+token: str = os.getenv("INFLUXDB_TOKEN", "default-token").strip()
+url: str = os.getenv("INFLUXDB_URL", "https://influxdb:8086").strip()
 
 f = open("client_token.txt", "r")
-client_token: str = f.read()
+client_token: str = f.read().strip()
 f.close()
 
 used_labels = []
@@ -23,13 +23,17 @@ class InfluxClient:
     def __init__(self, token, org, bucket):
         self._org = org
         self._bucket = bucket
-        self._client = InfluxDBClient(url="http://localhost:8086", token=token)
+        self._client = InfluxDBClient(url=url, token=token)
 
     from influxdb_client.client.write_api import ASYNCHRONOUS
 
     def write_data(self, data, write_option=ASYNCHRONOUS):
-        write_api = self._client.write_api(write_option)
-        write_api.write(self._bucket, self._org, data, write_precision="ms")
+        try:
+            write_api = self._client.write_api(write_option)
+            write_api.write(self._bucket, self._org, data, write_precision="ms")
+            print("Sucesfull data transfer", flush=True)
+        except Exception as e:
+            print("Exception caught", e, flush=True)
 
     def delete_data(self, start, end, predicate):
         delete_api = self._client.delete_api()
@@ -46,7 +50,7 @@ def new_measurements():
     args_token = args.get("token", '')
     if args_token == client_token:
         content = request.json
-        print("from " + str(content[0]["time"]) + "to" + str(content[-1]["time"]))
+        print("from " + str(content[0]["time"]) + "to" + str(content[-1]["time"]), flush=True)
         print(len(content))
         label = content[0]["measurement"]
         used_labels.append(label)

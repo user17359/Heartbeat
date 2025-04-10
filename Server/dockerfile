@@ -1,0 +1,17 @@
+# Use the official Python image as a base
+FROM python:3.9
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the local code into the container
+COPY . .
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Expose the port the app runs on (change from 8000 to 20309)
+EXPOSE 20309
+
+# Run the app with Gunicorn on container start
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:20309", "main:app"]
